@@ -15,7 +15,10 @@ RUN apt-get install -y python-setuptools python-dev patch
 RUN easy_install ReviewBoard
 
 # install supported DVCS
-RUN apt-get install -y git-core python-subvertpy
+RUN apt-get install -y python-subvertpy
+# with git
+#RUN apt-get install -y git-core python-subvertpy
+
 
 # install external dependencies
 RUN apt-get install -y memcached python-memcache
@@ -24,8 +27,14 @@ RUN apt-get install -y apache2 libapache2-mod-wsgi
 # initialize reviewboard
 RUN rb-site install --noinput --domain-name=reviews.local --db-type=sqlite3 --db-name=reviewboard --db-user=reviewboard --db-pass=reviewboard --cache-type=memcached --web-server-type=apache --python-loader=wsgi --admin-user=admin --admin-password=admin --admin-email=noreply@local /srv/reviews.local
 
+# move data to proper folder
+RUN mv /srv/reviews.local/reviewboard /srv/reviews.local/data/reviewboard
+
+# update config with new data file location
+RUN sed -i 's/reviewboard/\/srv\/reviews.local\/data\/reviewboard/g' /srv/reviews.local/conf/settings_local.py
+
 # fix permissions
-RUN chown -R www-data /srv/reviews.local /srv/reviews.local/htdocs/media/uploaded /srv/reviews.local/htdocs/media/ext /srv/reviews.local/data /srv/reviews.local/logs
+RUN chown -R www-data:www-data /srv/reviews.local/data /srv/reviews.local/htdocs/media/uploaded /srv/reviews.local/htdocs/media/ext /srv/reviews.local/data /srv/reviews.local/logs
 
 # configure apache
 RUN cp /srv/reviews.local/conf/apache-wsgi.conf /etc/apache2/sites-available/reviews.local
