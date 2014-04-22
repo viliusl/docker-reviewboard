@@ -2,8 +2,9 @@
 
 IMAGE="viliusl/ubuntu-reviewboard"
 
+CWD=$(pwd)
 BUILD_CMD="sudo docker build -rm=true -t=$IMAGE ."
-RUN_CMD="sudo docker run -d -p 55522:22 -p 55580:80 -p 55581:81 -p 1521:1521 $IMAGE"
+RUN_CMD="sudo docker run -d -p 55522:22 -p 55580:80 -v $CWD/data/:/srv/reviews.local/data $IMAGE"
 SSH_CMD="ssh root@localhost -p 55522"
 
 ID=`sudo docker ps | grep "$IMAGE" | head -n1 | cut -d " " -f1`

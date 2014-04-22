@@ -9,15 +9,13 @@ RUN apt-get upgrade -y
 # install sshd and supervisor
 RUN apt-get install -y openssh-server supervisor
 # install base dependencies
-RUN apt-get install -y python-setuptools python-dev patch
+RUN apt-get install -y python-setuptools python-dev patch subversion python-svn
 
 # install reviewboard
 RUN easy_install ReviewBoard
 
 # install supported DVCS
-RUN apt-get install -y python-subvertpy
-# with git
-#RUN apt-get install -y git-core python-subvertpy
+RUN apt-get install -y git-core python-subvertpy
 
 
 # install external dependencies
@@ -32,6 +30,7 @@ RUN mv /srv/reviews.local/reviewboard /srv/reviews.local/data/reviewboard
 
 # update config with new data file location
 RUN sed -i 's/reviewboard/\/srv\/reviews.local\/data\/reviewboard/g' /srv/reviews.local/conf/settings_local.py
+RUN sed -i 's/DEBUG = False/DEBUG = True/g' /srv/reviews.local/conf/settings_local.py
 
 # fix permissions
 RUN chown -R www-data:www-data /srv/reviews.local/data /srv/reviews.local/htdocs/media/uploaded /srv/reviews.local/htdocs/media/ext /srv/reviews.local/data /srv/reviews.local/logs
@@ -56,6 +55,9 @@ RUN cat /tmp/id_rsa_docker.pub >> /root/.ssh/authorized_keys
 #clean-up
 RUN rm /tmp/id_rsa_docker.pub
 RUN apt-get clean
+
+# remove database for later using from local mount point
+RUN rm /srv/reviews.local/data/reviewboard
 
 expose 22 80
 
