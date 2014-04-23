@@ -3,8 +3,9 @@
 IMAGE="viliusl/ubuntu-reviewboard"
 
 CWD=$(pwd)
+DB_LOCATION="$CWD/data/"
 BUILD_CMD="sudo docker build -rm=true -t=$IMAGE ."
-RUN_CMD="sudo docker run -d -p 55522:22 -p 55580:80 -v $CWD/data/:/srv/reviews.local/data $IMAGE"
+RUN_CMD="sudo docker run -d -p 55522:22 -p 55580:80 -v $DB_LOCATION:/srv/reviews.local/data $IMAGE"
 SSH_CMD="ssh root@localhost -p 55522"
 
 ID=`sudo docker ps | grep "$IMAGE" | head -n1 | cut -d " " -f1`

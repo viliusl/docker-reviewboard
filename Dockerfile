@@ -15,8 +15,7 @@ RUN apt-get install -y python-setuptools python-dev patch subversion python-svn
 RUN easy_install ReviewBoard
 
 # install supported DVCS
-RUN apt-get install -y git-core python-subvertpy
-
+RUN apt-get install -y python-subvertpy
 
 # install external dependencies
 RUN apt-get install -y memcached python-memcache
@@ -25,11 +24,9 @@ RUN apt-get install -y apache2 libapache2-mod-wsgi
 # initialize reviewboard
 RUN rb-site install --noinput --domain-name=reviews.local --db-type=sqlite3 --db-name=reviewboard --db-user=reviewboard --db-pass=reviewboard --cache-type=memcached --web-server-type=apache --python-loader=wsgi --admin-user=admin --admin-password=admin --admin-email=noreply@local /srv/reviews.local
 
-# move data to proper folder
-RUN mv /srv/reviews.local/reviewboard /srv/reviews.local/data/reviewboard
-
 # update config with new data file location
 RUN sed -i 's/reviewboard/\/srv\/reviews.local\/data\/reviewboard/g' /srv/reviews.local/conf/settings_local.py
+# turn debug on. Useful usually
 RUN sed -i 's/DEBUG = False/DEBUG = True/g' /srv/reviews.local/conf/settings_local.py
 
 # fix permissions
@@ -41,11 +38,11 @@ RUN a2dissite default
 RUN a2ensite reviews.local
 
 RUN mkdir -p /var/run/sshd
+RUN mkdir -p /var/run/apache2
 RUN mkdir -p /var/log/supervisor
 
 ADD supervisor/sshd.conf     /etc/supervisor/conf.d/sshd.conf
 ADD supervisor/apache.conf   /etc/supervisor/conf.d/apache.conf
-
 
 # add public key for passwordless auth
 ADD ssh_keys/id_rsa_docker.pub /tmp/id_rsa_docker.pub
@@ -56,9 +53,8 @@ RUN cat /tmp/id_rsa_docker.pub >> /root/.ssh/authorized_keys
 RUN rm /tmp/id_rsa_docker.pub
 RUN apt-get clean
 
-# remove database for later using from local mount point
-RUN rm /srv/reviews.local/data/reviewboard
+ADD scripts/run_supervisord.sh /usr/local/sbin/run_supervisord
 
 expose 22 80
 
-CMD ["/usr/bin/supervisord", "-n"]
+CMD ["/usr/local/sbin/run_supervisord"]
