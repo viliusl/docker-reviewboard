@@ -1,10 +1,9 @@
-FROM base
+FROM ubuntu:12.04
 
 MAINTAINER Vilius Lukosius <vilius.lukosius@gmail.com>
 
 # make sure the package repository is up to date
 RUN apt-get update
-RUN apt-get upgrade -y
 
 # install sshd and supervisor
 RUN apt-get install -y openssh-server supervisor
@@ -12,7 +11,7 @@ RUN apt-get install -y openssh-server supervisor
 RUN apt-get install -y python-setuptools python-dev patch subversion python-svn
 
 # install reviewboard
-RUN easy_install ReviewBoard
+RUN easy_install ReviewBoard==1.7.24
 
 # install supported DVCS
 RUN apt-get install -y python-subvertpy
